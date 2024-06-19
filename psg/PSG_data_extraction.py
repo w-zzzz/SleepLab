@@ -5,6 +5,7 @@ LastEditors: Do not edit
 LastEditTime: 2024-04-25 20:35:51
 FilePath: \2243dataprocessing\psg\PSG_data_extraction.py
 '''
+import os
 import mne
 import numpy as np
 import matplotlib.pyplot as plt
@@ -75,7 +76,7 @@ class PSGDataProcessor:
         return extracted_data
     
     
-    def plot_data(self, data, data_type, sampling_rate):
+    def plot_data(self, data, data_type, sampling_rate,save_path=None):
         """
         Plot the ECG data using Matplotlib.
         
@@ -93,7 +94,11 @@ class PSGDataProcessor:
         plt.title(data_type)
         plt.legend()
         plt.grid(True)
-        # plt.show()
+        
+        if save_path is not None:
+            data_to_save = np.column_stack((time_axis, data))
+            np.savetxt(os.path.join(save_path, data_type + 'data.txt'), data_to_save, header='t ' + data_type, fmt='%s', comments='')
+    # plt.show()
         
 # # Example usage:
 # psg_file_path = "../../PSG_Data/sub2/sub2_yuanshishuju.edf"

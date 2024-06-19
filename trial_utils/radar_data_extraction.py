@@ -23,7 +23,7 @@ class RadarDataProcessor:
         self.config=radar_config    
         self.csv_path = csv_path
         self.bin_file_info = self.read_csv_info(csv_path)
-        self.rangeMin=0.6 # m
+        self.rangeMin=0.7 # m
         self.rangeMax=0.9 # m
         if output_path is not None:
             if not os.path.exists(output_path):
@@ -43,9 +43,9 @@ class RadarDataProcessor:
                 l_max = 2**(numADCBits-1)-1
                 adcData[adcData>l_max]=2**numADCBits
         if isReal:
-            adcData = np.reshape(adcData, (numLanes, -1))
+            adcData = np.reshape(adcData, (numLanes, -1), order='F')
         else:
-            adcData = np.reshape(adcData, (numLanes*2, -1))
+            adcData = np.reshape(adcData, (numLanes*2, -1), order='F')
             adcData = adcData[:numLanes, :]+1j*adcData[numLanes:, :]
         return adcData
         
@@ -82,14 +82,14 @@ class RadarDataProcessor:
             return bin_data[:, start_idx:end_idx]
         
     
-    def target_detection_by_frame(self,rawDataCube, method='peak',rx=0):
+    def target_detection_by_frame(self,rawDataCube, method='fixed',rx=0):
         
         range_re,bandwidth=range_resolution(self.config.Nadc, self.config.sample_rate, self.config.slope)
         
         # doppler_re=doppler_resolution(bandwidth, self.config['f0'], self.config['ramp_end_time'], 
         #                               self.config['idle_time'], self.config['Nchirp'], self.config['Tx'])
         
-        rawDataCube=np.reshape(rawDataCube,(self.config.Tx*self.config.Rx,self.config.Nadc,self.config.Nchirp)) #(x,y,z)
+        rawDataCube=np.reshape(rawDataCube,(self.config.Tx*self.config.Rx,self.config.Nadc,self.config.Nchirp), order='F') #(x,y,z)
         rawDataCube=np.transpose(rawDataCube, (2, 0, 1))  # (z, x, y)(128,4,256)
         range_FFT=range_processing(rawDataCube)
         dopplermap, aoa_input=doppler_processing(range_FFT,clutter_removal_enabled=True,num_tx_antennas=1,accumulate=False)        
@@ -119,6 +119,13 @@ class RadarDataProcessor:
             else:
                 row = indices[0]
                 col = indices[1]
+                
+        elif method=='fixed':
+            print(rawDataCube.shape)
+            col=0
+            rx=0
+            row=21
+            
         else:
             raise ValueError("Unsupported method")
         idata=rawDataCube[col,rx,row].real
@@ -126,7 +133,7 @@ class RadarDataProcessor:
         return idata, qdata, [col, row]
         
     
-    def target_detection(self, raw_data, method='peak', tracking=False):
+    def target_detection(self, raw_data, method='fixed', tracking=False):
         """
         Apply target detection algorithms to radar data.
         
@@ -157,7 +164,7 @@ class RadarDataProcessor:
             Qdata=np.append(Qdata,q_data)
             for i in range(1,Nframe): 
                 cdata = trimmed_rawData[:, i*self.config.Nchirp*self.config.Nadc:(i+1)*self.config.Nchirp*self.config.Nadc].flatten()
-                rawDataCube=np.reshape(cdata,(self.config.Tx*self.config.Rx,self.config.Nadc,self.config.Nchirp)) #(x,y,z)
+                rawDataCube=np.reshape(cdata,(self.config.Tx*self.config.Rx,self.config.Nadc,self.config.Nchirp), order='F') #(x,y,z)
                 rawDataCube=np.transpose(rawDataCube, (2, 0, 1))  # (z, x, y)(128,4,256)
                 Idata=np.append(Idata,rawDataCube[idx[0],0,idx[1]].real)
                 Qdata=np.append(Qdata,rawDataCube[idx[0],0,idx[1]].imag)

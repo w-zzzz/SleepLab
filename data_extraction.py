@@ -27,7 +27,7 @@ Args0 = {
 
 Args1 = {
     'f0':77,                    # Hz
-    'ADCStarttime': 6,    # us
+    'ADCStarttime': 3.61,    # us
     'slope': 71.599,            # MHz/us
     'idle_time': 7,       # us
     'ramp_end_time': 55.84,    # us
@@ -87,8 +87,9 @@ if __name__ == "__main__":
     process_radar_data(args)
     
     processor = RadarDataProcessor(args,csv_path=args.csv_path,output_path=args.output_path)
-    start_time = datetime(2024, 4, 9, 2, 23, 30)
-    end_time = datetime(2024, 4, 9, 2, 24, 30)
+    start_time = datetime(2024, 4, 9, 0, 6, 12)
+    end_time = datetime(2024, 4, 9, 0, 11, 40)
+
     print('start time:',start_time,'\n','end time:',end_time)
     radar_rawdata = processor.extract_data_by_timestamp(start_time, end_time)
     print(radar_rawdata.shape)
@@ -121,8 +122,8 @@ if __name__ == "__main__":
     # Extract ECG and EEG data between the specified timestamps
     data_types = ['ECG', 'Thor','Pleth']
     extracted_data = processor.extract_segment_by_timestamp(start_time, end_time, data_types)
-    processor.plot_data(extracted_data['ECG'],'ECG', processor.sampling_rate)
-    processor.plot_data(extracted_data['Thor'],'Thor', processor.sampling_rate)
-    processor.plot_data(extracted_data['Pleth'],'Pleth', processor.sampling_rate)
+    processor.plot_data(extracted_data['ECG'],'ECG', processor.sampling_rate,save_path='./psg/')
+    processor.plot_data(extracted_data['Thor'],'Thor', processor.sampling_rate,save_path='./psg/')
+    processor.plot_data(extracted_data['Pleth'],'Pleth', processor.sampling_rate,save_path='./psg/')
     
     plt.show()  
