@@ -23,8 +23,8 @@ class RadarDataProcessor:
         self.config=radar_config    
         self.csv_path = csv_path
         self.bin_file_info = self.read_csv_info(csv_path)
-        self.rangeMin=0.2 # m
-        self.rangeMax=1.6 # m
+        self.rangeMin=0.6 # m
+        self.rangeMax=0.9 # m
         if output_path is not None:
             if not os.path.exists(output_path):
                 os.makedirs(output_path)
@@ -113,8 +113,12 @@ class RadarDataProcessor:
                 dopplermap[int(self.rangeMax/range_re):,:] = 0  
             peak = np.max(dopplermap)
             indices = np.where(dopplermap== peak)
-            row=indices[0] 
-            col=indices[1]
+            if indices[0].size > 1:
+                row = indices[0][0]
+                col = indices[0][1]
+            else:
+                row = indices[0]
+                col = indices[1]
         else:
             raise ValueError("Unsupported method")
         idata=rawDataCube[col,rx,row].real
@@ -158,6 +162,8 @@ class RadarDataProcessor:
                 Idata=np.append(Idata,rawDataCube[idx[0],0,idx[1]].real)
                 Qdata=np.append(Qdata,rawDataCube[idx[0],0,idx[1]].imag)
 
+
+
         def butter_lowpass(cutoff, fs, order=5):
             print('fs=',fs)
             nyq = 0.5 * fs  # 奈奎斯特频率
@@ -170,12 +176,12 @@ class RadarDataProcessor:
             y = filtfilt(b, a, data)
             return y
 
-        # 设置滤波器参数
-        cutoff = 8  # 截止频率 (Hz)
-        order = 5    # 滤波器阶数
-        # 对信号进行低通滤波
-        Idata = lowpass_filter(Idata, cutoff, 1e3/self.config.Period, order)
-        Qdata = lowpass_filter(Qdata, cutoff, 1e3/self.config.Period, order)
+        # # 设置滤波器参数
+        # cutoff = 10  # 截止频率 (Hz)
+        # order = 5    # 滤波器阶数
+        # # 对信号进行低通滤波
+        # Idata = lowpass_filter(Idata, cutoff, 1e3/self.config.Period, order)
+        # Qdata = lowpass_filter(Qdata, cutoff, 1e3/self.config.Period, order)
 
         print(self.output_path )
         if self.output_path is not None:

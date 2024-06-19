@@ -62,7 +62,7 @@ def get_file_size(file_path):
         raise FileNotFoundError("File not found")
 
 
-def csv_generation(bin_file_directory,capture_start,capture_end,total_duration,bin_file_count):
+def csv_generation(bin_file_directory,output_path,capture_start,capture_end,total_duration,bin_file_count):
     # bin_file_directory = '../2024-01-11/trial1'
     # Dictionary to store the file sizes
     file_sizes = {}
@@ -76,7 +76,13 @@ def csv_generation(bin_file_directory,capture_start,capture_end,total_duration,b
             data_points = file_size // (2 * 2 * 4)  # Calculate number of complex samples (16-bit real + 16-bit imaginary) for 4 Rx
             file_sizes[file_name] = {'file_size': file_size, 'data_points': data_points}
             total_data_points += data_points
+            
+    def extract_number(filename):
+        match = re.search(r'Raw_(\d+)', filename)
+        return int(match.group(1)) if match else -1
 
+    # 根据文件名中的数字对字典进行排序
+    file_sizes = dict(sorted(file_sizes.items(), key=lambda item: extract_number(item[0])))
     # Initialize a dictionary to hold the start and end times for each bin file
     bin_files_time_info = {}
 
@@ -102,7 +108,7 @@ def csv_generation(bin_file_directory,capture_start,capture_end,total_duration,b
     time_info_df = pd.DataFrame.from_dict(bin_files_time_info, orient='index')
 
     # Save the bin files time information to a new CSV file
-    output_path='../2024-04-09/bin_files_time_info.csv'
+    # output_path='../2024-04-09/bin_files_time_info.csv'
     time_info_df.to_csv(output_path)
     print(output_path)
 
