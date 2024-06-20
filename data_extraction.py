@@ -1,8 +1,9 @@
 from mmwave.IF_proc import IFSignalProcessor
 from trial_utils.radar_data_extraction import RadarDataProcessor
 from trial_utils.radar_info_generation_by_trial import trial_info_read,csv_generation
+from psg.PSG_data_extraction import PSGDataProcessor
 import numpy as np
-import os
+import os, re
 import pandas as pd
 import scipy
 from datetime import datetime
@@ -26,7 +27,7 @@ Args0 = {
 
 Args1 = {
     'f0':77,                    # Hz
-    'ADCStarttime': 6,    # us
+    'ADCStarttime': 3.61,    # us
     'slope': 71.599,            # MHz/us
     'idle_time': 7,       # us
     'ramp_end_time': 55.84,    # us
@@ -35,7 +36,7 @@ Args1 = {
     'Rx': 4,                      # Number of RX channels
     'Tx': 1,                      # Number of TX channels
     'Nchirp': 32,                # Number of chirps per frame
-    'Period': 30,            # ms
+    'Period': 40,            # ms
 }# All transferred to s
 
 
@@ -67,24 +68,28 @@ if __name__ == "__main__":
     parser.add_argument('--Tx', type=int, default=Args['Tx'], help='Number of TX channels (default: 1)')
     parser.add_argument('--Nchirp', type=int, default=Args['Nchirp'], help='Number of chirps per frame (default: 128 chirps)')
     parser.add_argument('--Period', type=float, default=Args['Period'], help='Period in ms (default: 40 ms)')
-    parser.add_argument('--bin_path', type=str, default='../2024-04-09/', help='path for data (default: "../2024-01-11/trial1")')
-    parser.add_argument('--csv_path', type=str, default='../2024-04-09/bin_files_time_info.csv', help='CSV path of datainfo (default: "../2024-01-11/trial1/bin_files_time_info.csv")')
-    parser.add_argument('--output_path', type=str, default='../2024-04-09/', help='Output path for data (default: "../2024-01-11/trial1")')
-
+    parser.add_argument('--csv_path', type=str, default='E:/RadarData/2243/male/2024-05-10/bin_files_time_info.csv', help='ignore')
+    parser.add_argument('--output_path', type=str, default='E:/RadarData/2243/male/2024-05-10/', help='ignore')
+    parser.add_argument('--bin_path', type=str, default='E:/RadarData/2243/female/2024-04-08', help='path for data (default: "../2024-01-11/trial1")')
+    
     # Parse the arguments
     args = parser.parse_args()
-
+    args.output_path=args.bin_path
+    args.csv_path=os.path.join(args.bin_path,'bin_files_time_info.csv')
     # Generate csv file
     if not os.path.exists(args.csv_path):
-        capture_start,capture_end,total_duration,bin_file_count=trial_info_read(args.csv_path)
-        csv_generation(args.bin_path,capture_start,capture_end,total_duration,bin_file_count)
+        pattern = re.compile(r'^adc_data.*\.csv$')
+        csv_file = next((os.path.join(args.bin_path, f) for f in os.listdir(args.bin_path) if pattern.match(f)), None)
+        capture_start,capture_end,total_duration,bin_file_count=trial_info_read(csv_file)
+        csv_generation(args.bin_path,args.csv_path,capture_start,capture_end,total_duration,bin_file_count)
 
     # Call the function to process radar data
     process_radar_data(args)
     
     processor = RadarDataProcessor(args,csv_path=args.csv_path,output_path=args.output_path)
-    start_time = datetime(2024, 4, 30, 3, 30, 5)
-    end_time = datetime(2024, 4, 30, 3, 30, 35)
+    start_time = datetime(2024, 4, 9, 0, 6, 12)
+    end_time = datetime(2024, 4, 9, 0, 11, 40)
+
     print('start time:',start_time,'\n','end time:',end_time)
     radar_rawdata = processor.extract_data_by_timestamp(start_time, end_time)
     print(radar_rawdata.shape)
@@ -94,17 +99,31 @@ if __name__ == "__main__":
     time_interval = total_seconds / float(Idata.shape[0])
     time_list = np.arange(0, total_seconds, time_interval)
     t = time_list[:Idata.shape[0]]
-    plt.subplot(211)
-    plt.plot(t,Idata)
-    plt.subplot(212)
-    plt.plot(t,Qdata)
-
+    # plt.subplot(211)
+    # plt.plot(t,Idata)
+    # plt.subplot(212)
+    # plt.plot(t,Qdata)
 
     iq_data=Idata + 1j*Qdata
-    IFprocessor = IFSignalProcessor(iq_data, period=30e-3, sampling_interval=0.03, plot_enabled=True)
+    IFprocessor = IFSignalProcessor(iq_data, period=40e-3, t=t, sampling_interval=40, plot_enabled=True)
     
     phase_data = IFprocessor.phase_unwrapping()
+    phase_data = IFprocessor.remove_dc_component()
     frequency, magnitude = IFprocessor.fft_of_signal(phase_data)
-    filtered_signal = IFprocessor.lowpass_filter(phase_data)
+    filtered_signal = IFprocessor.lowpass_filter(phase_data,cutoff=4)
     smoothed_signal = IFprocessor.smooth_signal(filtered_signal)
-    plt.show()   
+ 
+    
+    # Example usage:
+    psg_file_path = "E:/edf/20240408/003yuanshishujv.edf"
+    processor = PSGDataProcessor(psg_file_path)
+
+
+    # Extract ECG and EEG data between the specified timestamps
+    data_types = ['ECG', 'Thor','Pleth']
+    extracted_data = processor.extract_segment_by_timestamp(start_time, end_time, data_types)
+    processor.plot_data(extracted_data['ECG'],'ECG', processor.sampling_rate,save_path='./psg/')
+    processor.plot_data(extracted_data['Thor'],'Thor', processor.sampling_rate,save_path='./psg/')
+    processor.plot_data(extracted_data['Pleth'],'Pleth', processor.sampling_rate,save_path='./psg/')
+    
+    plt.show()  

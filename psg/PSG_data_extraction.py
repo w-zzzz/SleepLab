@@ -5,8 +5,8 @@ LastEditors: Do not edit
 LastEditTime: 2024-04-25 20:35:51
 FilePath: \2243dataprocessing\psg\PSG_data_extraction.py
 '''
+import os
 import mne
-import neurokit2 as nk
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
@@ -24,6 +24,7 @@ class PSGDataProcessor:
         self.data = mne.io.read_raw_edf(psg_file, preload=True)
         self.raw_data = self.data.get_data()
         self.sampling_rate = self.data.info['sfreq']
+        print(self.data.info)
         
         # Adjusting for potential changes in the 'meas_date' type
         if isinstance(self.data.info['meas_date'], tuple):
@@ -75,7 +76,7 @@ class PSGDataProcessor:
         return extracted_data
     
     
-    def plot_data(self, data, data_type, sampling_rate):
+    def plot_data(self, data, data_type, sampling_rate,save_path=None):
         """
         Plot the ECG data using Matplotlib.
         
@@ -85,7 +86,7 @@ class PSGDataProcessor:
         """
         # Create time axis in seconds
         time_axis = np.linspace(0, len(data) / sampling_rate, len(data))
-
+        print(data_type,len(data))
         plt.figure(figsize=(10, 4))
         plt.plot(time_axis, data, label=data_type)
         plt.xlabel('Time (seconds)')
@@ -93,18 +94,22 @@ class PSGDataProcessor:
         plt.title(data_type)
         plt.legend()
         plt.grid(True)
-        plt.show()
         
-# Example usage:
-psg_file_path = "../../PSG_Data/sub2/sub2_yuanshishuju.edf"
-processor = PSGDataProcessor(psg_file_path)
+        if save_path is not None:
+            data_to_save = np.column_stack((time_axis, data))
+            np.savetxt(os.path.join(save_path, data_type + 'data.txt'), data_to_save, header='t ' + data_type, fmt='%s', comments='')
+    # plt.show()
+        
+# # Example usage:
+# psg_file_path = "../../PSG_Data/sub2/sub2_yuanshishuju.edf"
+# processor = PSGDataProcessor(psg_file_path)
 
-# Define the start and end datetime for the data segment you want to extract
-start_datetime = datetime(2024, 1, 11, 14, 29, 53)
-end_datetime = datetime(2024, 1, 11, 14, 30, 23)
+# # Define the start and end datetime for the data segment you want to extract
+# start_datetime = datetime(2024, 1, 11, 14, 29, 53)
+# end_datetime = datetime(2024, 1, 11, 14, 30, 23)
 
-# Extract ECG and EEG data between the specified timestamps
-data_types = ['ECG', 'Thor']
-extracted_data = processor.extract_segment_by_timestamp(start_datetime, end_datetime, data_types)
-processor.plot_data(extracted_data['ECG'],'ECG', processor.sampling_rate)
-processor.plot_data(extracted_data['Thor'],'Thor', processor.sampling_rate)
+# # Extract ECG and EEG data between the specified timestamps
+# data_types = ['ECG', 'Thor']
+# extracted_data = processor.extract_segment_by_timestamp(start_datetime, end_datetime, data_types)
+# processor.plot_data(extracted_data['ECG'],'ECG', processor.sampling_rate)
+# processor.plot_data(extracted_data['Thor'],'Thor', processor.sampling_rate)

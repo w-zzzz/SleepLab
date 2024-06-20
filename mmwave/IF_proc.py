@@ -12,7 +12,7 @@ from scipy.fftpack import fft
 from scipy.interpolate import interp1d
 
 class IFSignalProcessor:
-    def __init__(self, iq_data, period, sampling_interval, plot_enabled=False):
+    def __init__(self, iq_data, period,t, sampling_interval, plot_enabled=False):
         self.iq_data = iq_data
         self.period = period
         self.sampling_interval = sampling_interval
@@ -20,8 +20,10 @@ class IFSignalProcessor:
 
         # Pre-compute common parameters
         self.n_proc = len(iq_data)
-        self.t = np.arange(0, self.period * self.n_proc, self.period)
-        self.fs = 1e3 * self.sampling_interval
+        print("datapoint no:",self.n_proc)
+        self.t=t
+        # self.t = np.arange(0, self.period * self.n_proc, self.period)
+        self.fs = 1 / self.period
 
     def phase_unwrapping(self):
         angle_data = np.unwrap(np.angle(self.iq_data))
@@ -31,11 +33,12 @@ class IFSignalProcessor:
         return angle_data
 
     def plot_phase_unwrapping(self, angle_data):
-        plt.subplot(2, 1, 1)
+        plt.figure(figsize=(10, 4))
         plt.plot(self.t, angle_data)
         plt.xlabel('t(s)')
         plt.ylabel('Phase (rad)')
         plt.title('Phase Unwrapping Result')
+
 
     def fft_of_signal(self, signal):
         n = len(signal)
@@ -46,14 +49,15 @@ class IFSignalProcessor:
         return f[:n//2], fft_signal[:n//2]
 
     def plot_fft(self, frequency, magnitude):
-        plt.subplot(2, 1, 2)
+        plt.figure(figsize=(10, 4))
         plt.plot(frequency, magnitude)
         plt.xlim([0.05, 3])
         plt.xlabel('Frequency (f/Hz)')
         plt.ylabel('Magnitude')
         plt.title('FFT of Phase Signal')
 
-    def lowpass_filter(self, signal, cutoff=5, order=12):
+
+    def lowpass_filter(self, signal, cutoff=4, order=8):
         d1 = butter(order, cutoff, btype='low', fs=self.fs)
         filtered_signal = filtfilt(d1[0], d1[1], signal)
         if self.plot_enabled:
@@ -61,8 +65,7 @@ class IFSignalProcessor:
         return filtered_signal
 
     def plot_lowpass(self, filtered_signal):
-        plt.figure()
-        plt.subplot(2, 1, 1)
+        plt.figure(figsize=(10, 4))
         plt.plot(self.t, filtered_signal)
         plt.xlabel('t(s)')
         plt.ylabel('Phase (rad)')
@@ -75,10 +78,10 @@ class IFSignalProcessor:
         return smoothed_signal
 
     def plot_smoothing(self, smoothed_signal):
-        plt.subplot(2, 1, 1)
+        plt.figure(figsize=(10, 4))
         plt.plot(self.t[:len(smoothed_signal)], smoothed_signal)
         plt.title('Smoothed Phase Signal')
-
+        
     def remove_dc_component(self):
         # Remove the DC component from the IQ data
         return detrend(self.iq_data)
