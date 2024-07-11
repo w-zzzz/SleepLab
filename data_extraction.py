@@ -1,7 +1,7 @@
 from mmwave.IF_proc import IFSignalProcessor
 from trial_utils.radar_data_extraction import RadarDataProcessor
 from trial_utils.radar_info_generation_by_trial import trial_info_read,csv_generation
-from psg.PSG_data_extraction import PSGDataProcessor
+from psg.psg_data_extraction import PSGDataProcessor
 import numpy as np
 import os, re
 import pandas as pd
