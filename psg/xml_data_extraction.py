@@ -1,9 +1,11 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from xml.dom.minidom import parseString
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from collections import Counter
+# from .constants import XML_PATH, START_DATETIME_STR
 
 plt.rcParams['figure.figsize'] = (18, 3)
 
@@ -19,8 +21,8 @@ class XMLProcessor:
         self.file_path = file_path
         self.start_datetime = datetime.strptime(start_datetime_str, "%Y-%m-%d %H:%M:%S")
         self.root = None
-        self.df_events = None
-        self.df_sleep_stages = None
+        self.events = None
+        self.sleep_stages = None
         self.stage_mapping = {
             5: 'REM Sleep',
             0: 'Wakefulness (W)',
@@ -31,7 +33,7 @@ class XMLProcessor:
         }
         self.epoch_length = None
 
-    def load_and_pretty_print_xml(self):
+    def load(self):
         """
         Load and pretty print the XML content.
         Saves the pretty-printed XML to a new file.
@@ -42,11 +44,19 @@ class XMLProcessor:
             self.root = ET.fromstring(xml_content)
             pretty_xml = parseString(xml_content).toprettyxml()
 
-            save_path = 'pretty_' + self.file_path
+            # Prefix 'pretty_' to the filename
+            dir_path, filename = os.path.split(self.file_path)
+            modified_filename = 'pretty_' + filename
+            save_path = os.path.join(dir_path, modified_filename)
+            
             with open(save_path, 'w') as file:
                 file.write(pretty_xml)
             
-            print(pretty_xml)
+            # print(pretty_xml)
+            self.extract_scored_events()
+            self.extract_sleep_stages()
+            print("Load successful!")
+            print("Saved the pretty-printed XML to path: ", save_path)
         except Exception as e:
             print(f"Error loading or pretty printing XML: {e}")
     
@@ -65,13 +75,13 @@ class XMLProcessor:
                 }
                 scored_events.append(event_data)
             
-            self.df_events = pd.DataFrame(scored_events)
-            self.df_events['Actual Start (sec)'] = self.df_events['Start'].round(2)
-            self.df_events['Duration'] = self.df_events['Duration'].round(2)
-            self.df_events['Start'] = self.df_events['Actual Start (sec)'].apply(lambda x: self.start_datetime + timedelta(seconds=x))
-            self.df_events['End'] = self.df_events.apply(lambda row: row['Start'] + timedelta(seconds=row['Duration']), axis=1)
-            self.df_events = self.df_events[['Name', 'Actual Start (sec)', 'Duration', 'Start', 'End', 'Input']]
-            print(self.df_events)
+            self.events = pd.DataFrame(scored_events)
+            self.events['Actual Start (sec)'] = self.events['Start'].round(2)
+            self.events['Duration'] = self.events['Duration'].round(2)
+            self.events['Start'] = self.events['Actual Start (sec)'].apply(lambda x: self.start_datetime + timedelta(seconds=x))
+            self.events['End'] = self.events.apply(lambda row: row['Start'] + timedelta(seconds=row['Duration']), axis=1)
+            self.events = self.events[['Name', 'Actual Start (sec)', 'Duration', 'Start', 'End', 'Input']]
+            print(self.events)
         except Exception as e:
             print(f"Error extracting scored events: {e}")
     
@@ -87,13 +97,13 @@ class XMLProcessor:
 
             mapped_stages = [self.stage_mapping[stage] for stage in sleep_stages]
 
-            self.df_sleep_stages = pd.DataFrame({
+            self.sleep_stages = pd.DataFrame({
                 'Time (seconds)': time_axis,
                 'Start Time': actual_start_times,
                 'Sleep Stage Code': sleep_stages,
                 'Sleep Stage': mapped_stages
             })
-            print(self.df_sleep_stages)
+            print(self.sleep_stages)
         except Exception as e:
             print(f"Error extracting sleep stages: {e}")
 
@@ -105,15 +115,15 @@ class XMLProcessor:
             colors = plt.cm.get_cmap('tab10', len(self.stage_mapping))
             added_labels = set()
 
-            for i in range(len(self.df_sleep_stages) - 1):
-                stage_label = self.stage_mapping[self.df_sleep_stages['Sleep Stage Code'][i]]
+            for i in range(len(self.sleep_stages) - 1):
+                stage_label = self.stage_mapping[self.sleep_stages['Sleep Stage Code'][i]]
                 if stage_label not in added_labels:
-                    plt.plot(self.df_sleep_stages['Time (seconds)'][i:i + 2], self.df_sleep_stages['Sleep Stage Code'][i:i + 2], 
-                            marker='o', linestyle='-', color=colors(self.df_sleep_stages['Sleep Stage Code'][i]), label=stage_label)
+                    plt.plot(self.sleep_stages['Time (seconds)'][i:i + 2], self.sleep_stages['Sleep Stage Code'][i:i + 2], 
+                            marker='o', linestyle='-', color=colors(self.sleep_stages['Sleep Stage Code'][i]), label=stage_label)
                     added_labels.add(stage_label)
                 else:
-                    plt.plot(self.df_sleep_stages['Time (seconds)'][i:i + 2], self.df_sleep_stages['Sleep Stage Code'][i:i + 2], 
-                            marker='o', linestyle='-', color=colors(self.df_sleep_stages['Sleep Stage Code'][i]))
+                    plt.plot(self.sleep_stages['Time (seconds)'][i:i + 2], self.sleep_stages['Sleep Stage Code'][i:i + 2], 
+                            marker='o', linestyle='-', color=colors(self.sleep_stages['Sleep Stage Code'][i]))
 
             plt.xlabel('Time (seconds)')
             plt.ylabel('Sleep Stage')
@@ -135,8 +145,8 @@ class XMLProcessor:
             colors = plt.cm.get_cmap('tab10', len(self.stage_mapping))
 
             for stage_code, stage_label in self.stage_mapping.items():
-                stage_times = self.df_sleep_stages[self.df_sleep_stages['Sleep Stage Code'] == stage_code]['Time (seconds)']
-                stage_values = self.df_sleep_stages[self.df_sleep_stages['Sleep Stage Code'] == stage_code]['Sleep Stage Code']
+                stage_times = self.sleep_stages[self.sleep_stages['Sleep Stage Code'] == stage_code]['Time (seconds)']
+                stage_values = self.sleep_stages[self.sleep_stages['Sleep Stage Code'] == stage_code]['Sleep Stage Code']
                 
                 if not stage_times.empty:
                     plt.plot(stage_times, stage_values, marker='o', linestyle='-', 
@@ -159,8 +169,8 @@ class XMLProcessor:
         Analyze the sleep stages and print statistics.
         """
         try:
-            total_stages = Counter(self.df_sleep_stages['Sleep Stage Code'])
-            total_on_bed_time = len(self.df_sleep_stages) * self.epoch_length
+            total_stages = Counter(self.sleep_stages['Sleep Stage Code'])
+            total_on_bed_time = len(self.sleep_stages) * self.epoch_length
 
             def convert_to_min_sec(seconds):
                 minutes = seconds // 60
@@ -207,13 +217,11 @@ class XMLProcessor:
 
 # Example usage:
 if __name__ == "__main__":
-    file_path = '20240620江逸凡.edf.XML'
+    file_path = 'psg/20240620江逸凡.edf.XML'
     start_datetime_str = "2024-06-20 22:02:34"
     
     xml_processor = XMLProcessor(file_path, start_datetime_str)
-    xml_processor.load_and_pretty_print_xml()
-    xml_processor.extract_scored_events()
-    xml_processor.extract_sleep_stages()
+    xml_processor.load()
     xml_processor.plot_sleep_stages()
     xml_processor.plot_sleep_stages_by_code()
     xml_processor.analyze_sleep_stages()

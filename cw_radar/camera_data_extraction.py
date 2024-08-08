@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
-from utils import extract_data_subset
+from .utils import extract_data_subset
 
 plt.rcParams['figure.figsize'] = (18, 3)
 

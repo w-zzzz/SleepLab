@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 from scipy.signal import butter, filtfilt, detrend
-from utils import extract_data_subset
+from .utils import extract_data_subset
 
 plt.rcParams['figure.figsize'] = (18, 3)
 

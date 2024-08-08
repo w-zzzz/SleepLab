@@ -1,7 +1,8 @@
 # main.py
 
-from xml_data_extraction import XMLProcessor
-from psg_data_extraction import PSGDataProcessor
+from psg import *
+# from xml_data_extraction import XMLProcessor
+# from psg_data_extraction import PSGDataProcessor
 from datetime import datetime
 
 def main():
@@ -10,9 +11,7 @@ def main():
     xml_start_datetime_str = "2024-06-20 22:02:34"
     
     xml_processor = XMLProcessor(xml_file_path, xml_start_datetime_str)
-    xml_processor.load_and_pretty_print_xml()
-    xml_processor.extract_scored_events()
-    xml_processor.extract_sleep_stages()
+    xml_processor.load()
     xml_processor.plot_sleep_stages()
     xml_processor.plot_sleep_stages_by_code()
     xml_processor.analyze_sleep_stages()

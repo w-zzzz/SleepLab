@@ -8,9 +8,11 @@ FilePath: \2243dataprocessing\psg\PSG_data_extraction.py
 import mne
 import pyedflib
 import numpy as np
+import pandas as pd
 import neurokit2 as nk
 import matplotlib.pyplot as plt
-from datetime import datetime
+from datetime import datetime, timedelta
+# from .constants import PSG_PATH
 
 plt.rcParams['figure.figsize']=(12, 6)
 
@@ -24,21 +26,23 @@ class PSGDataProcessor:
         """
         self.file_path = file_path
         self.data = None
-        self.raw_data = None
+        # self.raw_data = None
         self.edf_file = None
         self.sampling_rate = None
         self.ch_names = None
         self.start_datetime = None
+        self.end_datetime = None
     
     def load_data(self):
         """
         Load PSG data from an EDF file.
         """
         self.data = mne.io.read_raw_edf(self.file_path, preload=False)
-        self.raw_data = self.data.get_data()
+        # self.raw_data = self.data.get_data(return_times=False)
         self.sampling_rate = self.data.info['sfreq']
         self.ch_names = self.data.ch_names
         self.start_datetime = self.get_datetime_from_info(self.data.info['meas_date'])
+        self.end_datetime = self.start_datetime + timedelta(seconds=self.data.times[-1])
         # self.ch_indices = {channel_name: idx for idx, channel_name in enumerate(self.ch_names)}
         
         # Access loaded data attributes
@@ -147,6 +151,50 @@ class PSGDataProcessor:
             return datetime.fromtimestamp(meas_date[0]).replace(tzinfo=None)
         return meas_date.replace(tzinfo=None)
     
+    def convert_to_datetime(self, start_datetime, time_column):
+        """
+        Converts a list of pure time values in seconds to actual datetime values.
+
+        Parameters:
+        - start_datetime (datetime): The starting datetime.
+        - time_column (list): A list of pure time values in seconds since the start_datetime.
+
+        Returns:
+        - list: A list of actual datetime values corresponding to each pure time value.
+        """
+        actual_time_list = [start_datetime + timedelta(seconds=time) for time in time_column]
+        return actual_time_list
+
+    def extract_data_by_range(self, tmin, tmax):
+        """
+        Extract data for a specified time range from the PSG data.
+
+        Args:
+        tmin (float): Start time in seconds.
+        tmax (float): End time in seconds.
+
+        Returns:
+        pd.DataFrame: DataFrame containing the extracted data.
+        """
+        # Ensure data is loaded
+        if self.data is None:
+            raise ValueError("Data not loaded. Please load the data first.")
+        
+        start_time = self.start_datetime + timedelta(seconds=tmin)
+        end_time = self.start_datetime + timedelta(seconds=tmax)
+
+        # Extract data for the specified time range
+        extract_data, times = self.data[:, self.data.time_as_index([tmin, tmax])[0]:self.data.time_as_index([tmin, tmax])[1]]
+        
+        # Create a DataFrame and transpose the data array to match the DataFrame structure (rows are samples, columns are channels)
+        extracted_df = pd.DataFrame(data=extract_data.T, columns=self.data.ch_names)
+        
+        # Set the index to the times array for better time representation
+        extracted_df.index = self.convert_to_datetime(self.start_datetime, times)
+        extracted_df.index.name = 'Time'
+        
+        return start_time, end_time, extracted_df
+
     def extract_segment_by_timestamp(self, start_datetime, end_datetime, data_types):
         """
         Extract specific types of data within a specified time range defined by timestamps.
@@ -177,6 +225,12 @@ class PSGDataProcessor:
         dict: Dictionary of extracted data arrays keyed by type.
         """
         extracted_data = {}
+        time_array = np.array(self.data[data_types[0]][1])
+        extracted_data['Time'] = time_array[start_idx:end_idx]
+        print(len(extracted_data['Time']))
+        print(self.start_datetime)
+        extracted_data['Time'] = self.convert_to_datetime(self.start_datetime, extracted_data['Time'])
+        
         for data_type in data_types:
             if data_type in self.ch_names:
                 data_array = np.array(self.data[data_type][0][0])
@@ -184,7 +238,10 @@ class PSGDataProcessor:
             else:
                 raise ValueError(f"Data type {data_type} not found in the dataset.")
             
-        return extracted_data
+        # Convert extracted_data to a pandas DataFrame
+        extracted_data_df = pd.DataFrame.from_dict(extracted_data)
+        extracted_data_df.set_index('Time', inplace=True)
+        return extracted_data_df
 
     def plot_data(self, data, data_type, sampling_rate):
         """
@@ -313,44 +370,50 @@ if __name__ == "__main__":
     # Load the data from the specified file
     psg_processor.load_data()
 
-    # Overview plot of PSG data
-    psg_processor.psg_plot()
+    # # Overview plot of PSG data
+    # psg_processor.psg_plot()
 
-    # # Get the index of a specific channel
-    # channel_name = 'ECG'
-    # psg_processor.get_channel_index(channel_name)
+    # # # Get the index of a specific channel
+    # # channel_name = 'ECG'
+    # # psg_processor.get_channel_index(channel_name)
 
-    # Print file header information
-    psg_processor.retrieve_info('file')
+    # # Print file header information
+    # psg_processor.retrieve_info('file')
 
-    # Print signal labels
-    psg_processor.retrieve_info('label')
+    # # Print signal labels
+    # psg_processor.retrieve_info('label')
 
-    # Print signal details
-    psg_processor.retrieve_info('signal')
+    # # Print signal details
+    # psg_processor.retrieve_info('signal')
 
-    # Plot signals over time
-    start_datetime = datetime(2024, 3, 7, 22, 10, 00)  # Replace with your actual start datetime
-    end_datetime = datetime(2024, 3, 7, 22, 11, 00)  # Replace with your actual end datetime
-    data_types = ['ECG', 'Pleth']  # Replace with your actual data types
+    # # Extract data by range
+    tmin, tmax = 10, 20  # Extract data between 10 and 20 seconds
+    *_, extracted_data = psg_processor.extract_data_by_range(tmin, tmax)
+    print(psg_processor.start_datetime)
+    print(extracted_data)
+    
+    # # Plot signals over time
+    # start_datetime = datetime(2024, 3, 7, 22, 10, 00)  # Replace with your actual start datetime
+    # end_datetime = datetime(2024, 3, 7, 22, 11, 00)  # Replace with your actual end datetime
+    # extracted_types = ['ECG', 'Pleth']  # Replace with your actual data types
 
-    print(f"Start Timestamp: {start_datetime}, End Timestamp: {end_datetime}")  # Print the start and end timestamps of the extracted data
-    extracted_data = psg_processor.extract_segment_by_timestamp(start_datetime, end_datetime, data_types)
-    psg_processor.plot_data(extracted_data['ECG'], 'ECG', psg_processor.sampling_rate)
+    # print(f"Start Timestamp: {start_datetime}, End Timestamp: {end_datetime}")  # Print the start and end timestamps of the extracted data
+    # extracted_data = psg_processor.extract_segment_by_timestamp(start_datetime, end_datetime, extracted_types)
+    # psg_processor.plot_data(extracted_data['ECG'], 'ECG', psg_processor.sampling_rate)
+    # print(extracted_data)
+  
+    # # Plot comparison between signals
+    # psg_processor.compare_plot(extracted_data, extracted_types, psg_processor.sampling_rate)
 
-    # Plot comparison between signals
-    extracted_types = list(extracted_data.keys())
-    psg_processor.compare_plot(extracted_data, extracted_types, psg_processor.sampling_rate)
+    # # Plot ECG signal
+    # ecg_signals, ecg_info = psg_processor.ecg_diagram(extracted_data['ECG'])
 
-    # Plot ECG signal
-    ecg_signals, ecg_info = psg_processor.ecg_diagram(extracted_data['ECG'])
+    # # Plot RSP signal
+    # rsp_signals, rsp_info = psg_processor.rsp_diagram(extracted_data['Pleth'])
 
-    # Plot RSP signal
-    rsp_signals, rsp_info = psg_processor.rsp_diagram(extracted_data['Pleth'])
+    # # Plot multiple PSG signals
+    # # data_types = ['ECG', 'Pleth', 'EMG_L', 'E1-M2']
+    # extracted_types = ['ECG', 'Pleth']
 
-    # Plot multiple PSG signals
-    # data_types = ['ECG', 'Pleth', 'EMG_L', 'E1-M2']
-    data_types = ['ECG', 'Pleth']
-
-    extracted_data = psg_processor.extract_segment_by_timestamp(start_datetime, end_datetime, data_types)
-    psg_processor.signals_diagram(extracted_data)
+    # extracted_data = psg_processor.extract_segment_by_timestamp(start_datetime, end_datetime, extracted_types)
+    # psg_processor.signals_diagram(extracted_data)
