@@ -37,7 +37,7 @@ class PSGDataProcessor:
         """
         Load PSG data from an EDF file.
         """
-        self.data = mne.io.read_raw_edf(self.file_path, preload=False)
+        self.data = mne.io.read_raw_edf(self.file_path, preload=True)
         # self.raw_data = self.data.get_data(return_times=False)
         self.sampling_rate = self.data.info['sfreq']
         self.ch_names = self.data.ch_names
@@ -363,7 +363,8 @@ if __name__ == "__main__":
     # Specify the path to the EDF file
     # psg_file_path = "../../PSG_Data/sub2/sub2_yuanshishuju.edf"
     # file_path = "/Users/w.z/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/SleepData/PSG_Data/2024-03-07/002yuanshishuju.edf"
-    file_path = r"C:\Users\amd\OneDrive - National University of Singapore\SleepData\szu_hospital\PSG\2024-6-20jiangyifan.edf"
+    # file_path = r"C:\Users\amd\OneDrive - National University of Singapore\SleepData\szu_hospital\PSG\2024-6-20jiangyifan.edf"
+    file_path = "/opt/data/private/ZhouWenren/SleepLab/psg/2024-6-20jiangyifan.edf"
 
     # Create an instance of the PSGDataProcessor
     psg_processor = PSGDataProcessor(file_path)
@@ -420,3 +421,4 @@ if __name__ == "__main__":
 
     # extracted_data = psg_processor.extract_segment_by_timestamp(start_datetime, end_datetime, extracted_types)
     # psg_processor.signals_diagram(extracted_data)
+    
