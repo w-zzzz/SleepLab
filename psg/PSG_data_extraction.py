@@ -362,7 +362,8 @@ class PSGDataProcessor:
 if __name__ == "__main__":
     # Specify the path to the EDF file
     # psg_file_path = "../../PSG_Data/sub2/sub2_yuanshishuju.edf"
-    file_path = "/Users/w.z/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/SleepData/PSG_Data/2024-03-07/002yuanshishuju.edf"
+    # file_path = "/Users/w.z/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/SleepData/PSG_Data/2024-03-07/002yuanshishuju.edf"
+    file_path = r"C:\Users\amd\OneDrive - National University of Singapore\SleepData\szu_hospital\PSG\2024-6-20jiangyifan.edf"
 
     # Create an instance of the PSGDataProcessor
     psg_processor = PSGDataProcessor(file_path)
@@ -387,29 +388,31 @@ if __name__ == "__main__":
     # psg_processor.retrieve_info('signal')
 
     # # Extract data by range
-    tmin, tmax = 10, 20  # Extract data between 10 and 20 seconds
-    *_, extracted_data = psg_processor.extract_data_by_range(tmin, tmax)
-    print(psg_processor.start_datetime)
-    print(extracted_data)
+    # tmin, tmax = 10, 20  # Extract data between 10 and 20 seconds
+    # *_, extracted_data = psg_processor.extract_data_by_range(tmin, tmax)
+    # print(psg_processor.start_datetime)
+    # print(extracted_data)
     
-    # # Plot signals over time
+    # Plot signals over time
     # start_datetime = datetime(2024, 3, 7, 22, 10, 00)  # Replace with your actual start datetime
     # end_datetime = datetime(2024, 3, 7, 22, 11, 00)  # Replace with your actual end datetime
-    # extracted_types = ['ECG', 'Pleth']  # Replace with your actual data types
+    start_datetime = datetime(2024, 6, 20, 22, 10, 33) # Replace with your actual start datetime
+    end_datetime = datetime(2024, 6, 20, 22, 11, 33)  # Replace with your actual end datetime
+    extracted_types = ['ECG', 'Pleth']  # Replace with your actual data types
 
-    # print(f"Start Timestamp: {start_datetime}, End Timestamp: {end_datetime}")  # Print the start and end timestamps of the extracted data
-    # extracted_data = psg_processor.extract_segment_by_timestamp(start_datetime, end_datetime, extracted_types)
-    # psg_processor.plot_data(extracted_data['ECG'], 'ECG', psg_processor.sampling_rate)
-    # print(extracted_data)
+    print(f"Start Timestamp: {start_datetime}, End Timestamp: {end_datetime}")  # Print the start and end timestamps of the extracted data
+    extracted_data = psg_processor.extract_segment_by_timestamp(start_datetime, end_datetime, extracted_types)
+    psg_processor.plot_data(extracted_data['ECG'], 'ECG', psg_processor.sampling_rate)
+    print(extracted_data)
   
-    # # Plot comparison between signals
-    # psg_processor.compare_plot(extracted_data, extracted_types, psg_processor.sampling_rate)
+    # Plot comparison between signals
+    psg_processor.compare_plot(extracted_data, extracted_types, psg_processor.sampling_rate)
 
-    # # Plot ECG signal
-    # ecg_signals, ecg_info = psg_processor.ecg_diagram(extracted_data['ECG'])
+    # Plot ECG signal
+    ecg_signals, ecg_info = psg_processor.ecg_diagram(extracted_data['ECG'])
 
-    # # Plot RSP signal
-    # rsp_signals, rsp_info = psg_processor.rsp_diagram(extracted_data['Pleth'])
+    # Plot RSP signal
+    rsp_signals, rsp_info = psg_processor.rsp_diagram(extracted_data['Pleth'])
 
     # # Plot multiple PSG signals
     # # data_types = ['ECG', 'Pleth', 'EMG_L', 'E1-M2']
