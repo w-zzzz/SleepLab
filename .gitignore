@@ -12,3 +12,6 @@ __pycache__/
 
 # Ignore szu_hospital directory
 psg/szu_hospital/
+
+# Ignore all .edf files
+*.edf
