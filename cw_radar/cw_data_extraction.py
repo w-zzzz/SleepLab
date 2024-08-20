@@ -58,7 +58,7 @@ class CWDataProcessor:
         plt.title('Phase Unwrapping of Radar Signal')
         plt.legend()
         plt.grid(True)
-        plt.xticks([0, len(filtered_signal) - 1], [start_datetime.strftime('%H:%M:%S'), end_datetime.strftime('%H:%M:%S')])
+        plt.xticks([0, len(filtered_signal) - 1], [data.iloc[0]['timestamp'].strftime('%H:%M:%S'), data.iloc[-1]['timestamp'].strftime('%H:%M:%S')])
         plt.tight_layout()
         plt.show()
 
@@ -93,7 +93,8 @@ class CWDataProcessor:
 
 # Example usage:
 if __name__ == "__main__":
-    file_path = "/Users/w.z/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/SleepData/苏州大学附属医院/Radar/radar20240620220948433561.csv"
+    # file_path = "/Users/w.z/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/SleepData/苏州大学附属医院/Radar/radar20240620220948433561.csv"
+    file_path = "/opt/data/private/ZhouWenren/SleepLab/cw_radar/radar20240620220948433561.csv"
     sample_rate = 1000
 
     # Create an instance of the CWDataProcessor
