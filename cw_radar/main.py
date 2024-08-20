@@ -10,7 +10,7 @@ def main():
     # Example usage of CameraDataProcessor
     file_path = '/path/to/your/csv_file.csv'
     # file_path = '/Users/w.z/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/SleepData/苏州大学附属医院/Camera/camera20240620220949415042.csv'
-    
+    file_path = "/opt/data/private/ZhouWenren/SleepLab/cw_radar/camera20240620220949415042.csv"
     camera_processor = CameraDataProcessor(file_path)
     camera_processor.load_data()
     print(camera_processor.df.head())
@@ -20,10 +20,11 @@ def main():
     end_datetime = datetime.strptime('20240620222049', '%Y%m%d%H%M%S')
     df_subset = extract_data_subset(camera_processor.df, start_datetime, end_datetime)
     camera_processor.plot_rgb(df_subset)
-    
+
     # Example usage of CWDataProcessor
     file_path = '/path/to/your/csv_file.csv'
     # file_path = "/Users/w.z/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/SleepData/苏州大学附属医院/Radar/radar20240620220948433561.csv"
+    file_path = "/opt/data/private/ZhouWenren/SleepLab/cw_radar/radar20240620220948433561.csv"
     sample_rate = 1000
 
     # Create an instance of the CWDataProcessor
