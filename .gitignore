@@ -1,6 +1,9 @@
 # Ignore all __pycache__ directories
 __pycache__/
 
+# Ignore szu_hospital directory
+psg/szu_hospital/
+
 # Ignore all .pyc files
 *.pyc
 
@@ -10,8 +13,8 @@ __pycache__/
 # Ignore all .pkl files
 *.pkl
 
-# Ignore szu_hospital directory
-psg/szu_hospital/
-
 # Ignore all .edf files
 *.edf
+
+# Ignore all .csv files
+*.csv
