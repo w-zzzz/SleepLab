@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from scipy.signal import butter, filtfilt, detrend
 from .utils import extract_data_subset
+from .utils import resample_data
+
 
 plt.rcParams['figure.figsize'] = (18, 3)
 
@@ -31,26 +33,42 @@ class CWDataProcessor:
         - data: DataFrame containing the in-phase (data_i) and quadrature (data_q) components of the signal.
 
         Returns:
-        - filtered_signal: The processed signal.
+        - processed_df: DataFrame with timestamp as the index and the processed signal as the 'processed_signal' column.
         """
+        # Extract data_i and data_q as floats
         data_i = data['data_i'].astype(float)
         data_q = data['data_q'].astype(float)
+
+        # Perform arctan demodulation
         sig = np.arctan2(data_q, data_i)
+
+        # Unwrap the phase
         sig_unwrapped = np.unwrap(np.angle(sig))
+
+        # Detrend the unwrapped signal
         sig_unwrapped = detrend(sig_unwrapped)
-        d1 = butter(4, 5 / (0.5 * self.sample_rate), btype='low')
-        filtered_signal = filtfilt(d1[0], d1[1], sig_unwrapped)
-        return filtered_signal
+
+        # Design a low-pass filter
+        b, a = butter(4, 5 / (0.5 * self.sample_rate), btype='low')
+
+        # Apply the filter to the detrended signal
+        filtered_signal = filtfilt(b, a, sig_unwrapped)
+
+        # Create a DataFrame with the timestamp as the index and the filtered signal as a column
+        processed_df = pd.DataFrame(filtered_signal, index=data['timestamp'], columns=['processed_signal'])
+
+        return processed_df
 
     def plot_processed_data(self, data):
         """
         Plots the processed signal data with time labels for start and end datetimes.
 
         Parameters:
-        - start_datetime: The start datetime of the data as a string.
-        - end_datetime: The end datetime of the data as a string.
+        - data: DataFrame containing the signal data to be processed and plotted.
         """
-        filtered_signal = self.process_signal(data)
+        filtered_signal_df = self.process_signal(data)
+        filtered_signal = filtered_signal_df['processed_signal']
+
         plt.figure(figsize=(12, 6))
         plt.plot(filtered_signal, label='Unwrapped Phase')
         plt.xlabel('Time (h:m:s)')
@@ -58,22 +76,33 @@ class CWDataProcessor:
         plt.title('Phase Unwrapping of Radar Signal')
         plt.legend()
         plt.grid(True)
-        plt.xticks([0, len(filtered_signal) - 1], [data.iloc[0]['timestamp'].strftime('%H:%M:%S'), data.iloc[-1]['timestamp'].strftime('%H:%M:%S')])
+
+        # Set x-ticks to show start and end time
+        # plt.xticks([0, len(filtered_signal) - 1], 
+        #            [data.iloc[0]['timestamp'].strftime('%H:%M:%S'), 
+        #             data.iloc[-1]['timestamp'].strftime('%H:%M:%S')])
+
         plt.tight_layout()
         plt.show()
 
     def plot_frequency_analysis(self, data):
         """
         Perform frequency analysis and plot the FFT of the unwrapped signal.
+
+        Parameters:
+        - data: DataFrame containing the signal data to be analyzed and plotted.
         """
-        filtered_signal = self.process_signal(data)
-        sig_unwrapped = filtered_signal
+        filtered_signal_df = self.process_signal(data)
+        sig_unwrapped = filtered_signal_df['processed_signal']
+
+        # Perform FFT
         fft_values = np.fft.fft(sig_unwrapped)
         N = len(sig_unwrapped)
         T = 1 / self.sample_rate
         frequencies = np.fft.fftfreq(N, T)
         magnitude = np.abs(fft_values)
 
+        # Select the appropriate frequency range
         if N % 2 == 0:
             freq_range = frequencies[:N // 2]
             magnitude_range = magnitude[:N // 2]
@@ -83,10 +112,10 @@ class CWDataProcessor:
 
         plt.figure(figsize=(10, 6))
         plt.plot(freq_range, magnitude_range)
-        plt.title('One-sided Frequency Map of sig_unwrapped')
+        plt.title('One-sided Frequency Map of Processed Signal')
         plt.xlabel('Frequency (Hz)')
         plt.ylabel('Magnitude')
-        plt.xlim(0, 5)
+        plt.xlim(0, 5)  # Adjust as needed
         plt.grid(True)
         plt.show()
 

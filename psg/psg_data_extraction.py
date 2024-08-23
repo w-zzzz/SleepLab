@@ -12,6 +12,7 @@ import pandas as pd
 import neurokit2 as nk
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+from .utils import resample_data
 # from .constants import PSG_PATH
 
 plt.rcParams['figure.figsize']=(12, 6)
@@ -49,7 +50,8 @@ class PSGDataProcessor:
         print(f"Sampling Rate: {self.sampling_rate}")
         print(f"Channel Names: {self.ch_names}")
         print(f"Start Datetime: {self.start_datetime}")
-                
+        print(f"End Datetime: {self.end_datetime}")
+
     def psg_plot(self):
         self.data.plot()
         
@@ -195,7 +197,7 @@ class PSGDataProcessor:
         
         return start_time, end_time, extracted_df
 
-    def extract_segment_by_timestamp(self, start_datetime, end_datetime, data_types):
+    def extract_segment_by_timestamp(self, start_datetime=None, end_datetime=None, data_types=None):
         """
         Extract specific types of data within a specified time range defined by timestamps.
         
@@ -207,6 +209,15 @@ class PSGDataProcessor:
         Returns:
         dict: Dictionary of extracted data arrays keyed by type.
         """
+        
+        # Assign default values if parameters are None
+        if start_datetime is None:
+            start_datetime = self.start_datetime
+        if end_datetime is None:
+            end_datetime = self.end_datetime
+        if data_types is None:
+            data_types = ['ECG', 'Thor', 'Abdo', 'SpO2']
+        
         start_idx = int((start_datetime - self.start_datetime).total_seconds() * self.sampling_rate)
         end_idx = int((end_datetime - self.start_datetime).total_seconds() * self.sampling_rate)
         
