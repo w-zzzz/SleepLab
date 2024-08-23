@@ -45,9 +45,13 @@ def resample_data(data, original_freq, target_freq):
             # Upsampling
             resampled_data = data.apply(lambda x: resample_poly(x, up=int(target_freq/original_freq), down=1))
         
-        # Resample the 'Time' index
-        new_time_index = pd.date_range(start=data.index[0], periods=len(resampled_data), freq=f'{1000/target_freq}ms')
-        resampled_data.index = new_time_index
+        # # Resample the 'Time' index
+        # new_time_index = pd.date_range(start=data.index[0], periods=len(resampled_data), freq=f'{1000/target_freq}ms')
+        # resampled_data.index = new_time_index
+        
+        # Resample the 'Time' index using interpolation
+        resampled_data.index = pd.date_range(start=data.index[0], end=data.index[-1], periods=len(resampled_data))
+
 
         return resampled_data
 

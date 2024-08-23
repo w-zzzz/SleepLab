@@ -78,9 +78,7 @@ class CWDataProcessor:
         plt.grid(True)
 
         # Set x-ticks to show start and end time
-        # plt.xticks([0, len(filtered_signal) - 1], 
-        #            [data.iloc[0]['timestamp'].strftime('%H:%M:%S'), 
-        #             data.iloc[-1]['timestamp'].strftime('%H:%M:%S')])
+        # plt.xticks([0, len(filtered_signal) - 1], [data.iloc[0]['timestamp'].strftime('%H:%M:%S'), data.iloc[-1]['timestamp'].strftime('%H:%M:%S')])
 
         plt.tight_layout()
         plt.show()
