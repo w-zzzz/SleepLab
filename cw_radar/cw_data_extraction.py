@@ -14,6 +14,8 @@ class CWDataProcessor:
         self.file_path = file_path
         self.sample_rate = sample_rate
         self.data = None
+        self.start_datetime = None
+        self.end_datetime = None
     
     def load_data(self):
         """
@@ -21,7 +23,10 @@ class CWDataProcessor:
         """
         self.data = pd.read_csv(self.file_path)
         self.data['timestamp'] = pd.to_datetime(self.data['timestamp'], format='%Y%m%d%H%M%S%f')
-        print(f"Start time: {self.data['timestamp'].iloc[0].strftime('%H%M%S')}")
+        self.start_datetime = self.data['timestamp'].iloc[0].strftime('%Y-%m-%d %H:%M:%S')
+        print(f"Start time: {self.start_datetime}")
+        self.end_datetime = self.data['timestamp'].iloc[-1].strftime('%Y-%m-%d %H:%M:%S')
+        print(f"End time: {self.end_datetime}")
         print(f"Sample rate: {self.sample_rate} Hz")
 
     def process_signal(self, data):
