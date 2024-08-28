@@ -10,16 +10,16 @@ from collections import Counter
 plt.rcParams['figure.figsize'] = (18, 3)
 
 class XMLProcessor:
-    def __init__(self, file_path, start_datetime_str):
+    def __init__(self, file_path, start_datetime):
         """
         Initialize the XMLProcessor with file path and start datetime.
 
         Args:
         file_path (str): Path to the XML file.
-        start_datetime_str (str): Start datetime in the format 'YYYY-MM-DD HH:MM:SS'.
+        start_datetime: Start datetime in the format 'YYYY-MM-DD HH:MM:SS'.
         """
         self.file_path = file_path
-        self.start_datetime = datetime.strptime(start_datetime_str, "%Y-%m-%d %H:%M:%S")
+        self.start_datetime = start_datetime
         self.root = None
         self.events = None
         self.sleep_stages = None
