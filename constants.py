@@ -6,5 +6,6 @@ PSG_FILE_PATH = PATH + "/psg/2024-6-20jiangyifan.edf"
 XML_FILE_PATH = "psg/20240620江逸凡.edf.XML"
 RADAR_FILE_PATH = PATH + "/cw_radar/radar20240620220948433561.csv"
 SAVE_PATH = PATH + "/psg/merged_2024-6-20jiangyifan.edf.pkl"
+FULL_SAVE_PATH = PATH + "/psg/full_merged_2024-6-20jiangyifan.edf.pkl"
 
 print(PSG_FILE_PATH)
