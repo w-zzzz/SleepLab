@@ -3,6 +3,9 @@ __pycache__/
 
 # Ignore szu_hospital directory
 psg/szu_hospital/
+psg/20240620/
+psg/20240925/
+psg/20240927/
 
 # Ignore all .pyc files
 *.pyc

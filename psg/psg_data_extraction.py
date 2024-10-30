@@ -216,7 +216,7 @@ class PSGDataProcessor:
         if end_datetime is None:
             end_datetime = self.end_datetime
         if data_types is None:
-            data_types = ['ECG', 'Thor', 'Abdo', 'SpO2', 'Pressure', 'Leg/L', 'Leg/R']
+            data_types = ['ECG', 'Thor', 'Abdo', 'SpO2', 'Pressure', 'Leg/L', 'Leg/R', 'E1-M2', 'E2-M2']
         
         start_idx = int((start_datetime - self.start_datetime).total_seconds() * self.sampling_rate)
         end_idx = int((end_datetime - self.start_datetime).total_seconds() * self.sampling_rate)
