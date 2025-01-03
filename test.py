@@ -1,3 +1,7 @@
+import sys
+print(sys.prefix)
+from emd-signal import emd
+
 peak_locs, peak_mags = emd.sift.get_padded_extrema(x, pad_width=0, mode='peaks')
 trough_locs, trough_mags = emd.sift.get_padded_extrema(x, pad_width=0, mode='troughs')
 
