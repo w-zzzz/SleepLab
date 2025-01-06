@@ -18,13 +18,21 @@ FULL_SAVE_PATH = PATH + "/psg/full_merged_2024-6-20jiangyifan.edf.pkl"
 
 # 2024-09-25曹建侠
 DATE_PATH_2 = "/psg/20240925"
-FOLDER_PATH = '/20240925/selected'
+FOLDER_PATH_2 = '/20240925/selected'
 PSG_FILE_PATH_2 = PATH + DATE_PATH_2 + '/PSG2024092546曹建侠.edf'
 XML_FILE_PATH_2 = PATH + DATE_PATH_2 + '/PSG2024092546曹建侠已分期.edf.XML'
-RADAR_FILE_PATH_2 = PATH + DATE_PATH_2 + FOLDER_PATH + '/adc_data_2024_09_25_Raw_LogFile.csv'
+RADAR_FILE_PATH_2 = PATH + DATE_PATH_2 + FOLDER_PATH_2 + '/adc_data_2024_09_25_Raw_LogFile.csv'
+BREATH_PATH_2 = PATH + DATE_PATH_2 + '/20240925/range_0.8416breath_300s.csv'
+HEART_PATH_2 = PATH + DATE_PATH_2 + '/20240925/range_0.8416heart_300s.csv'
 
-
-
+# 2024-09-27俞兴男
+DATE_PATH_3 = "/psg/20240927"
+FOLDER_PATH_3 = '/20240927/selected'
+PSG_FILE_PATH_3 = PATH + DATE_PATH_3 + '/PSG20240927俞兴男已分期.edf'
+XML_FILE_PATH_3 = PATH + DATE_PATH_3 + '/PSG20240927俞兴男已分期.edf.XML'
+RADAR_FILE_PATH_3 = PATH + DATE_PATH_3 + FOLDER_PATH_3 + '/adc_data_2024_09_27_Raw_LogFile.csv'
+BREATH_PATH_3 = PATH + DATE_PATH_3 + '/20240927/0927breath.csv'
+HEART_PATH_3 = PATH + DATE_PATH_3 + '/20240927/0927heart.csv'
 
 # from pathlib import Path
 # from dataclasses import dataclass
