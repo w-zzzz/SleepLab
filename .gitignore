@@ -21,6 +21,8 @@ psg/20240927/
 
 # Ignore all .csv files
 *.csv
+# Ignore all .csv files
+*.XML
 
 *.nosync
 *.pt.nosync

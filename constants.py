@@ -34,6 +34,14 @@ RADAR_FILE_PATH_3 = PATH + DATE_PATH_3 + FOLDER_PATH_3 + '/adc_data_2024_09_27_R
 BREATH_PATH_3 = PATH + DATE_PATH_3 + '/20240927/0927breath.csv'
 HEART_PATH_3 = PATH + DATE_PATH_3 + '/20240927/0927heart.csv'
 
+# 2025-01-21李子银
+DATE_PATH_4 = "/psg/20250121"
+PSG_FILE_PATH_4 = PATH + DATE_PATH_4 + "/PSG20250101A李子银首夜仅PSG.edf"
+XML_FILE_PATH_4 = PATH + DATE_PATH_4 + "/PSG20250101A李子银首夜仅PSG.edf.XML"
+RADAR_FILE_PATH_4 = PATH + "/cw_radar/2025-01-21/radar20250121221903431329.csv"
+SAVE_PATH_4 = PATH + "/psg/merged_2025-1-21liziyin.edf.pkl"
+FULL_SAVE_PATH_4 = PATH + "/psg/full_merged_2025-1-21liziyin.edf.pkl"
+
 # from pathlib import Path
 # from dataclasses import dataclass
 # from typing import Optional
