@@ -39,6 +39,7 @@ DATE_PATH_4 = "/psg/20250121"
 PSG_FILE_PATH_4 = PATH + DATE_PATH_4 + "/PSG20250101A李子银首夜仅PSG.edf"
 XML_FILE_PATH_4 = PATH + DATE_PATH_4 + "/PSG20250101A李子银首夜仅PSG.edf.XML"
 RADAR_FILE_PATH_4 = PATH + "/cw_radar/2025-01-21/radar20250121221903431329.csv"
+# RADAR_FILE_PATH_4 = PATH + "/cw_radar/2025-01-21/radar20250122031639995741.csv"
 SAVE_PATH_4 = PATH + "/psg/merged_2025-1-21liziyin.edf.pkl"
 FULL_SAVE_PATH_4 = PATH + "/psg/full_merged_2025-1-21liziyin.edf.pkl"
 
