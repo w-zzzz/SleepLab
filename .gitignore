@@ -26,3 +26,4 @@ psg/20240927/
 
 *.nosync
 *.pt.nosync
+*.h5
