@@ -46,6 +46,14 @@ XML_FILE_PATH_5 = PATH + PSG_PATH_5 + "/PSG2025022631A任红兵.edf.XML"
 RADAR_FILE_PATH_5 = PATH + RADAR_PATH_5 + "/radar20250226233910744239.csv"
 RADAR_FILE_PATH_5_2nd = PATH + RADAR_PATH_5 + "/radar20250226222805302380.csv"
 
+# 2025-02-27任红兵
+PSG_PATH_6 = "/psg/data/2025-02-27"
+RADAR_PATH_6 = "/cw_radar/data/2025-02-27"
+PSG_FILE_PATH_6 = PATH + PSG_PATH_6 + "/20250227E任红兵.edf"
+XML_FILE_PATH_6 = PATH + PSG_PATH_6 + "/20250227E任红兵.edf.XML"
+RADAR_FILE_PATH_6 = PATH + RADAR_PATH_6 + "/radar20250227225543092087.csv"
+
+
 # from pathlib import Path
 # from dataclasses import dataclass
 # from typing import Optional
